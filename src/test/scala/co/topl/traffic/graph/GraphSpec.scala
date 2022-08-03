@@ -8,7 +8,7 @@ class GraphSpec extends BaseSpec {
 
   "Dijkstra algorithm" should {
     "find the shortest path" in {
-      val v = (0 to 7).map(n => Vertex(n.toString))
+      val v = (0 to 7).map(n => Vertex(n))
       val g = Graph()
         .addEdge(v(4), v(5), 0.35)
         .addEdge(v(5), v(4), 0.35)
@@ -29,7 +29,7 @@ class GraphSpec extends BaseSpec {
       val path = g.shortestPath(v(0), v(6))
       path shouldBe defined
       path.get.vertices should be(
-        List(Vertex("0"), Vertex("2"), Vertex("7"), Vertex("3"), Vertex("6"))
+        List(Vertex(0), Vertex(2), Vertex(7), Vertex(3), Vertex(6))
       )
       path.get.distance should be(1.51d +- tolerance)
     }

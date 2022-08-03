@@ -5,37 +5,35 @@ import co.topl.traffic.graph.Graph._
 import scala.annotation.tailrec
 
 object Graph {
-  case class Vertex(id: String) extends AnyVal
+  case class Vertex[V](v: V) extends AnyVal
 
-  case class Adjacency(
-    vertex: Vertex,
+  case class Adjacency[V](
+    vertex: Vertex[V],
     weight: Double
   )
 
-  case class Edge(
-    from: Vertex,
-    to: Vertex,
+  case class Edge[V](
+    from: Vertex[V],
+    to: Vertex[V],
     weight: Double
   )
 
-  case class Path(
-    vertices: List[Vertex],
+  case class Path[V](
+    vertices: List[Vertex[V]],
     distance: Double
   )
 
 }
 
-case class Graph(adjacency: Map[Vertex, List[Adjacency]] = Map.empty) {
+case class Graph[V](adjacency: Map[Vertex[V], List[Adjacency[V]]] = Map.empty[Vertex[V], List[Adjacency[V]]]) {
 
-  type Result = Either[String, Path]
-
-  def addEdge(e: Edge): Graph = addEdge(e.from, e.to, e.weight)
+  def addEdge(e: Edge[V]): Graph[V] = addEdge(e.from, e.to, e.weight)
 
   def addEdge(
-    from: Vertex,
-    to: Vertex,
+    from: Vertex[V],
+    to: Vertex[V],
     weight: Double
-  ): Graph = {
+  ): Graph[V] = {
     val adjs = adjacency.getOrElse(from, List.empty)
     Graph(
       adjacency.updated(from, adjs :+ Adjacency(to, weight))
@@ -43,15 +41,15 @@ case class Graph(adjacency: Map[Vertex, List[Adjacency]] = Map.empty) {
   }
 
   def dijkstra(
-    source: Vertex
-  ): (Map[Vertex, Double], Map[Vertex, Vertex]) = {
+    source: Vertex[V]
+  ): (Map[Vertex[V], Double], Map[Vertex[V], Vertex[V]]) = {
 
     @tailrec
     def dijkstraRec(
-      unvisited: Set[Vertex],
-      dist: Map[Vertex, Double],
-      prev: Map[Vertex, Vertex]
-    ): (Map[Vertex, Double], Map[Vertex, Vertex]) =
+      unvisited: Set[Vertex[V]],
+      dist: Map[Vertex[V], Double],
+      prev: Map[Vertex[V], Vertex[V]]
+    ): (Map[Vertex[V], Double], Map[Vertex[V], Vertex[V]]) =
       if (unvisited.isEmpty) (dist, prev)
       else {
         val current = unvisited.minBy(dist)
@@ -70,21 +68,21 @@ case class Graph(adjacency: Map[Vertex, List[Adjacency]] = Map.empty) {
   }
 
   def shortestPath(
-    source: Vertex,
-    target: Vertex
-  ): Option[Path] = {
+    source: Vertex[V],
+    target: Vertex[V]
+  ): Option[Path[V]] = {
     val (dist, prev) = dijkstra(source)
     if (prev.contains(target) || source == target)
       Some(Path(path(target)(prev), dist(target)))
     else None
   }
 
-  def path(to: Vertex)(prev: Map[Vertex, Vertex]): List[Vertex] = {
+  def path(to: Vertex[V])(prev: Map[Vertex[V], Vertex[V]]): List[Vertex[V]] = {
     @tailrec
     def pathRec(
-      x: Vertex,
-      acc: List[Vertex]
-    ): List[Vertex] = prev.get(x) match {
+      x: Vertex[V],
+      acc: List[Vertex[V]]
+    ): List[Vertex[V]] = prev.get(x) match {
       case None => x :: acc
       case Some(y) => pathRec(y, x :: acc)
     }
