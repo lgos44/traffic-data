@@ -25,10 +25,19 @@ object Graph {
 
 }
 
+/** A graph represented by an adjacency list
+  * @param adjacency Maps each vertex to its adjacent vertices
+  * @tparam V Vertex type parameter
+  */
 case class Graph[V](
   adjacency: Map[Vertex[V], List[Adjacency[V]]] = Map.empty[Vertex[V], List[Adjacency[V]]]
 ) {
 
+  /**
+    * Adds multiple edges
+    * @param edges list of edges
+    * @return the updated graph
+    */
   def addEdges(edges: List[Edge[V]]): Graph[V] = {
     @tailrec
     def addEdgesRec(
@@ -41,8 +50,20 @@ case class Graph[V](
     addEdgesRec(edges, this)
   }
 
+  /**
+    * Adds a single edge
+    * @param e edge
+    * @return the updated graph
+    */
   def addEdge(e: Edge[V]): Graph[V] = addEdge(e.from, e.to, e.weight)
 
+  /**
+    * Adds a single edge
+    * @param from start vertex
+    * @param to end vertex
+    * @param weight edge weight
+    * @return the updated graph
+    */
   def addEdge(
     from: Vertex[V],
     to: Vertex[V],
@@ -54,10 +75,22 @@ case class Graph[V](
     )
   }
 
+  /** Algorithm for finding the shortest path between nodes in a graph
+    * @param source Source vertex to calculate the paths from
+    * @return Tuple where the first item is a hashmap with distances from source to the vertex at key
+    *         while the second item is hashmap containing the previous hops on the shortest path from source to the
+    *         vertex at key
+    */
   def dijkstra(
     source: Vertex[V]
   ): (Map[Vertex[V], Double], Map[Vertex[V], Vertex[V]]) = {
 
+    /**
+      * Recursively applies dijkstra
+      * @param unvisited set of unvisited nodes
+      * @param dist contains the current distances from the source to other vertices
+      * @param prev previous hops on the shortest path from source to the current vertex
+      */
     @tailrec
     def dijkstraRec(
       unvisited: Set[Vertex[V]],
@@ -66,10 +99,12 @@ case class Graph[V](
     ): (Map[Vertex[V], Double], Map[Vertex[V], Vertex[V]]) =
       if (unvisited.isEmpty) (dist, prev)
       else {
+        // get unvisited vertex with minimum distance
         val current = unvisited.minBy(dist)
         val newUnvisited = unvisited - current
         val neighbors = adjacency(current)
         val distUpdates = neighbors.collect {
+          // If this path is shorter than the current shortest path recorded update dist and prev
           case neighbor if (dist(current) + neighbor.weight) < dist.getOrElse(neighbor.vertex, Double.MaxValue) =>
             neighbor.vertex -> (dist(current) + neighbor.weight)
         }
@@ -81,6 +116,12 @@ case class Graph[V](
     dijkstraRec(adjacency.keys.toSet, distInit, Map.empty)
   }
 
+  /**
+    * Builds the shortest path from the source to target vertex
+    * @param source start vertex
+    * @param target end vertex
+    * @return Shortest Path containing the list of hops and total distance to target node
+    */
   def shortestPath(
     source: Vertex[V],
     target: Vertex[V]
@@ -91,6 +132,12 @@ case class Graph[V](
     else None
   }
 
+  /**
+    * Recursively iterates the prev map to build the path
+    * @param to start vertex
+    * @param prev previous hops
+    * @return list of vertices in path
+    */
   def path(to: Vertex[V])(prev: Map[Vertex[V], Vertex[V]]): List[Vertex[V]] = {
     @tailrec
     def pathRec(
