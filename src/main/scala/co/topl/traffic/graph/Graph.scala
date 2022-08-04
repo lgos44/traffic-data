@@ -25,7 +25,21 @@ object Graph {
 
 }
 
-case class Graph[V](adjacency: Map[Vertex[V], List[Adjacency[V]]] = Map.empty[Vertex[V], List[Adjacency[V]]]) {
+case class Graph[V](
+  adjacency: Map[Vertex[V], List[Adjacency[V]]] = Map.empty[Vertex[V], List[Adjacency[V]]]
+) {
+
+  def addEdges(edges: List[Edge[V]]): Graph[V] = {
+    @tailrec
+    def addEdgesRec(
+      edges: List[Edge[V]],
+      acc: Graph[V]
+    ): Graph[V] = edges match {
+      case Nil => acc
+      case h :: t => addEdgesRec(t, acc.addEdge(h))
+    }
+    addEdgesRec(edges, this)
+  }
 
   def addEdge(e: Edge[V]): Graph[V] = addEdge(e.from, e.to, e.weight)
 

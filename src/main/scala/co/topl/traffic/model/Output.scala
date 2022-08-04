@@ -1,14 +1,21 @@
 package co.topl.traffic.model
 
-case class Segment(
-  from: Intersection,
-  to: Intersection,
-  duration: Double
-)
+import co.topl.traffic.graph.Graph
 
 case class Output(
-  start: Intersection,
-  end: Intersection,
-  roadSegments: Seq[Segment],
+  startIntersection: Intersection,
+  endIntersection: Intersection,
+  roadSegments: Seq[Intersection],
   totalTransitTime: Double
 )
+
+object Output {
+
+  def fromPath(path: Graph.Path[Intersection]): Output = Output(
+    startIntersection = path.vertices.head.v,
+    endIntersection = path.vertices.last.v,
+    roadSegments = path.vertices.drop(1).dropRight(1).map(_.v),
+    totalTransitTime = path.distance
+  )
+
+}
