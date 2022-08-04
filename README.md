@@ -63,11 +63,12 @@ The output of the program should be JSON. It should include:
 
 # Usage
 
+```
 Usage: traffic-path [options]
-
 -f, --file <file>    Input file containing traffic data
 -s, --start <start>  Start intersection, identified by the combination of the avenue and street names, e.g. F24
 -e, --end <end>      End intersection, identified by the combination of the avenue and street names, e.g. F24
+```
 
 Example:
 ```
