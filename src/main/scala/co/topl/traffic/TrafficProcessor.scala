@@ -5,12 +5,24 @@ import co.topl.traffic.model.{Intersection, TrafficData}
 
 object TrafficProcessor {
 
-  case class EdgeAcc[A](
-    edge: Edge[Intersection],
-    acc: A
+  trait Aggregation[V, B] {
+    def map(in: Edge[V]): B
+
+    def reduce(
+      left: B,
+      right: B
+    ): B
+
+  }
+
+  case class AvgAcc(
+    avg: Double,
+    count: Int
   )
 
-  def aggregate(data: TrafficData): List[Edge[Intersection]] =
+  def aggregate(
+    data: TrafficData
+  ): List[Edge[Intersection]] =
     data.trafficMeasurements
       .flatMap(m =>
         m.measurements.map(m =>
@@ -21,13 +33,13 @@ object TrafficProcessor {
           )
         )
       )
-      .groupMapReduce(edge => (edge.from, edge.to))(edge => EdgeAcc(edge, 1)) { case (e1, e2) =>
-        val newAcc = e1.acc + e2.acc
-        val average = ((e1.edge.weight * e1.acc) + (e2.edge.weight * e2.acc)) / (e1.acc + e2.acc)
-        EdgeAcc(e1.edge.copy(weight = average), newAcc)
+      .groupMapReduce(edge => (edge.from, edge.to))(in => AvgAcc(in.weight, 1)) { case (left, right) =>
+        val newAcc = left.count + right.count
+        val average = ((left.avg * left.count) + (right.avg * right.count)) / (left.count + right.count)
+        AvgAcc(average, newAcc)
       }
       .map { case (k, v) =>
-        Edge(k._1, k._2, v.edge.weight)
+        Edge(k._1, k._2, v.avg)
       }
       .toList
 
