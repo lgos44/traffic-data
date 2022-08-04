@@ -5,10 +5,10 @@ import co.topl.traffic.cli.Arguments
 import co.topl.traffic.cli.Parser.argumentParser
 import co.topl.traffic.graph.Graph
 import co.topl.traffic.graph.Graph.Vertex
-import co.topl.traffic.model.{Intersection, Output, TrafficData}
+import co.topl.traffic.model.{Error, Intersection, Output, TrafficData}
 import co.topl.traffic.util.FileUtils
-import io.circe.parser._
 import io.circe.generic.auto._
+import io.circe.parser._
 import io.circe.syntax._
 import scopt.OParser
 
@@ -25,7 +25,8 @@ object Main extends IOApp {
           edges = TrafficProcessor.aggregate(data)
           graph = Graph().addEdges(edges)
           result = graph.shortestPath(Vertex(start), Vertex(end))
-          _ <- IO.println(Output.fromPath(result.get).asJson.toString())
+          path <- IO.fromOption(result)(Error("No path found for given intersections."))
+          _ <- IO.println(Output.fromPath(path).asJson.toString())
         } yield ()).as(ExitCode.Success)
       case _ =>
         IO.raiseError(model.Error("Arguments are invalid.")).as(ExitCode.Error)
